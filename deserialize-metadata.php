@@ -491,7 +491,7 @@ class Deserialize_Metadata {
 			if ( array_key_exists( $key, $maps ) ) {
 				if ( $maps[$key]['wp_table'] === 'wp_postmeta' && $value != '' && $value != NULL ) {
 					add_post_meta( $post_id, $maps[$key]['wp_column'], $value, $maps[$key]['unique'] );
-				} else if ( $maps[$key]['wp_table'] === 'wp_posts' && $value != '' && $value != NULL ) {
+				} elseif ( $maps[$key]['wp_table'] === 'wp_posts' && $value != '' && $value != NULL ) {
 					$post = array(
 						'ID' => $post_id,
 						$maps[$key]['wp_column'] => $value
