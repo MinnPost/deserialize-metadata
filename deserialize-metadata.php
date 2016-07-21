@@ -1,7 +1,8 @@
 <?php
 /*
 Plugin Name: Deserialize Metadata
-Description: In the process of migrating from Drupal to WordPress by SQL queries, it's likely that some metadata fields that are serialized in Drupal will be migrated into the WordPress database, but will need to be separated into fields.
+Plugin URI: https://wordpress.org/plugins/deserialize-metadata/
+Description: When migrating from another system (i.e. Drupal), WordPress can require data that is currently serialized to be unserialized and stored in its own WordPress-specific tables/columns. This plugin can look for such data, and deserialize and store it, based on the plugin settings.
 Version: 0.0.1
 Author: Jonathan Stegall
 Author URI: http://code.minnpost.com
