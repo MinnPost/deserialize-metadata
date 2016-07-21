@@ -468,7 +468,6 @@ class Deserialize_Metadata {
 			);
 			$query = new WP_Query( $args );
 			if ( $query->have_posts() ) {
-				error_log('There are ' . $query->post_count . ' posts with imported metadata.');
 				while ( $query->have_posts() ) {
 					$query->the_post();
 					$post_id = $query->post->ID;
