@@ -1,6 +1,5 @@
 === Deserialize Metadata ===
 Contributors: jonathanstegall, minnpost
-Donate link: http://code.minnpost.com/
 Tags: metadata, import
 Requires at least: 4.5.3
 Tested up to: 4.5.3
