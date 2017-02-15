@@ -3,7 +3,7 @@
 Plugin Name: Deserialize Metadata
 Plugin URI: https://wordpress.org/plugins/deserialize-metadata/
 Description: When migrating from another system (i.e. Drupal), WordPress can require data that is currently serialized to be unserialized and stored in its own WordPress-specific tables/columns. This plugin can look for such data, and deserialize and store it, based on the plugin settings.
-Version: 0.0.3
+Version: 0.0.4
 Author: Jonathan Stegall
 Author URI: http://code.minnpost.com
 License: GPL2+
@@ -36,7 +36,7 @@ class Deserialize_Metadata {
 	 */
 	public function __construct() {
 
-		$this->version = '0.0.3';
+		$this->version = '0.0.4';
 		$this->config = array();
 		$this->wp_tables = array(
 			'wp_posts' => 'wp_posts',
@@ -541,16 +541,18 @@ class Deserialize_Metadata {
 	 * @return void
 	 */
 	public function create_fields( $post_id, $metadata, $maps ) {
-		foreach ( $metadata as $key => $value ) {
-			if ( array_key_exists( $key, $maps ) ) {
-				if ( $maps[$key]['wp_table'] === 'wp_postmeta' && $value != '' && $value != NULL ) {
-					add_post_meta( $post_id, $maps[$key]['wp_column'], $value, $maps[$key]['unique'] );
-				} elseif ( $maps[$key]['wp_table'] === 'wp_posts' && $value != '' && $value != NULL ) {
-					$post = array(
-						'ID' => $post_id,
-						$maps[$key]['wp_column'] => $value
-					);
-					wp_update_post( $post );
+		if ( is_array( $metadata ) && !empty( $metadata ) ) {
+			foreach ( $metadata as $key => $value ) {
+				if ( array_key_exists( $key, $maps ) ) {
+					if ( $maps[$key]['wp_table'] === 'wp_postmeta' && $value != '' && $value != NULL ) {
+						add_post_meta( $post_id, $maps[$key]['wp_column'], $value, $maps[$key]['unique'] );
+					} elseif ( $maps[$key]['wp_table'] === 'wp_posts' && $value != '' && $value != NULL ) {
+						$post = array(
+							'ID' => $post_id,
+							$maps[$key]['wp_column'] => $value
+						);
+						wp_update_post( $post );
+					}
 				}
 			}
 		}
