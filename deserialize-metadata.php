@@ -295,20 +295,31 @@ class Deserialize_Metadata {
                     'desc' => __( 'Maximum posts the query should load', 'deserialize-metadata' ),
                 ),
             ),
-            'schedule' => array(
-                'title' => __( 'Schedule', 'deserialize-metadata' ),
-                'callback' => $select_callback,
-                'page' => $page,
-                'section' => $section,
-                'args' => array(
-                    'desc' => __( 'How often the plugin should find and process data', 'deserialize-metadata' ),
-                    'items' => array(
-                    	'hourly' => __( 'Hourly', 'deserialize-metadata' ),
-                    	'twicedaily' => __( 'Twice Daily', 'deserialize-metadata' ),
-                    	'daily' => __( 'Daily', 'deserialize-metadata' )
-                    ) // values from https://codex.wordpress.org/Function_Reference/wp_schedule_event
-                ),
-            ),
+			'schedule_number' => array(
+				'title' => __( 'Run schedule every', 'deserialize-metadata' ),
+				'callback' => $input_callback,
+				'page' => $page,
+				'section' => $section,
+				'args' => array(
+					'type' => 'number',
+					'desc' => '',
+				),
+			),
+			'schedule_unit' => array(
+		        'title' => __( 'Time unit', 'deserialize-metadata' ),
+		        'callback' => $select_callback,
+		        'page' => $page,
+		        'section' => $section,
+		        'args' => array(
+		            'type' => 'select',
+		            'desc' => '',
+		            'items' => array(
+		                'minutes' => __( 'Minutes', 'deserialize-metadata' ),
+		                'hours' => __( 'Hours', 'deserialize-metadata' ),
+		                'days' => __( 'Days', 'deserialize-metadata' ),
+		            )
+		        )
+		    )
         );
 
         foreach( $settings as $key => $attributes ) {
@@ -333,6 +344,40 @@ class Deserialize_Metadata {
         register_setting( $section, 'deserialize_metadata_maps' );
 
 	}
+
+    /**
+    * Convert the schedule frequency from the admin settings into an array
+    * interval must be in seconds for the class to use it
+    *
+    */
+    public function get_schedule_frequency_key( $name = '' ) {
+
+    	if ( $name !== '' ) {
+    		$name = '_' . $name;
+    	}
+
+    	$schedule_number = get_option( 'deserialize_metadata' . $name . '_schedule_number', '' );
+    	$schedule_unit = get_option( 'deserialize_metadata' . $name . '_schedule_unit', '' );
+
+		switch ( $schedule_unit ) {
+			case 'minutes':
+				$seconds = 60;
+				break;
+			case 'hours':
+				$seconds = 3600;
+				break;
+            case 'days':
+                $seconds = 86400;
+                break;
+            default:
+                $seconds = 0;
+		}
+
+		$key = $schedule_unit . '_' . $schedule_number;
+
+		return $key;
+
+    }
 
 	/**
     * Default display for <input> fields
@@ -434,9 +479,13 @@ class Deserialize_Metadata {
 	 */
 	public function schedule() {
 		foreach ($this->config as $key => $value) {
-			if (! wp_next_scheduled ( 'start_serialized_event' ) ) {
-				wp_schedule_event( time(), $value['schedule'], 'start_serialized_event' );
+		    // this would need to change to allow different schedules
+		    $schedule_frequency = $this->get_schedule_frequency_key();
+    	
+		    if (! wp_next_scheduled ( 'start_serialized_event' ) ) {
+				wp_schedule_event( time(), $schedule_frequency, 'start_serialized_event' );
 		    }
+
 		    add_action( 'start_serialized_event', array( $this, 'get_posts_with_serialized_metadata') );
 	    }
 	}
