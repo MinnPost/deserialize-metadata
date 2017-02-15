@@ -72,9 +72,8 @@ class Deserialize_Metadata {
     }
 
     /**
-    * Default display for <input> fields
+    * Create WordPress admin options page
     *
-    * @param array $args
     */
     public function create_admin_menu() {
     	add_options_page( __( 'Deserialize Metadata', 'deserialize-metadata' ), __( 'Deserialize Metadata', 'deserialize-metadata' ), 'manage_options', 'deserialize-metadata', array( &$this, 'show_admin_page' ) );
@@ -82,6 +81,9 @@ class Deserialize_Metadata {
 
 	/**
     * Display a Settings link on the main Plugins page
+    *
+    * @param array $links
+    * @param string $file
     *
     * @return array $links
     */
