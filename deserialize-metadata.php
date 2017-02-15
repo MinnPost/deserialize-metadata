@@ -249,8 +249,8 @@ class Deserialize_Metadata {
 	public function admin_settings_form() {
 		$page = 'deserialize-metadata';
 		$section = 'deserialize-metadata';
-		$input_callback = array( &$this, 'display_input_field' );
-		$select_callback = array( &$this, 'display_select' );
+		$input_callback = array( $this, 'display_input_field' );
+		$select_callback = array( $this, 'display_select' );
 		add_settings_section( $page, null, null, $page );
 
 		$settings = array(
