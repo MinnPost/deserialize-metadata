@@ -3,7 +3,7 @@
 Plugin Name: Deserialize Metadata
 Plugin URI: https://wordpress.org/plugins/deserialize-metadata/
 Description: When migrating from another system (i.e. Drupal), WordPress can require data that is currently serialized to be unserialized and stored in its own WordPress-specific tables/columns. This plugin can look for such data, and deserialize and store it, based on the plugin settings.
-Version: 0.0.5
+Version: 0.0.6
 Author: Jonathan Stegall
 Author URI: http://code.minnpost.com
 License: GPL2+
@@ -36,7 +36,7 @@ class Deserialize_Metadata {
 	 */
 	public function __construct() {
 
-		$this->version = '0.0.5';
+		$this->version = '0.0.6';
 		$this->config = array();
 		$this->wp_tables = array(
 			'wp_posts' => 'wp_posts',
@@ -490,9 +490,8 @@ class Deserialize_Metadata {
 			if ( ! wp_next_scheduled( 'start_serialized_event' ) ) {
 				wp_schedule_event( time(), $schedule_frequency, 'start_serialized_event' );
 			}
-
-			add_action( 'start_serialized_event', array( $this, 'get_posts_with_serialized_metadata' ) );
 		}
+		add_action( 'start_serialized_event', array( $this, 'get_posts_with_serialized_metadata' ) );
 	}
 
 	/**
@@ -513,12 +512,16 @@ class Deserialize_Metadata {
 	 */
 	public function get_posts_with_serialized_metadata() {
 		foreach ( $this->config as $config ) {
+
+			$offset = get_option( 'deserialize_metadata_last_row_checked', '0' );
+
 			$key = $config['wp_imported_field'];
 			$maps = $config['maps'];
 			$args = array(
 				'post_type' => $config['post_type'],
 				'post_status' => $config['post_status'],
-				'posts_per_page' => $config['posts_per_page'],
+				'posts_per_page' => (int) $config['posts_per_page'],
+				'offset' => (int) $offset,
 				'meta_query' => array(
 					array(
 						'key' => $key,
@@ -534,6 +537,7 @@ class Deserialize_Metadata {
 					$this->create_fields( $post_id, $metadata, $maps );
 					$this->delete_combined_field( $post_id, $key );
 				}
+				update_option( 'deserialize_metadata_last_row_checked', $config['posts_per_page'] + $offset );
 			}
 		}
 
