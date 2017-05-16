@@ -36,7 +36,7 @@ class Deserialize_Metadata {
 	 */
 	public function __construct() {
 
-		$this->version = '0.0.4';
+		$this->version = '0.0.5';
 		$this->config = array();
 		$this->wp_tables = array(
 			'wp_posts' => 'wp_posts',
