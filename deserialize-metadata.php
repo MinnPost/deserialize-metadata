@@ -30,13 +30,32 @@ class Deserialize_Metadata {
 	private $wp_tables;
 
 	/**
+	 * @var object
+	 *
+	 */
+	static $instance = null;
+
+	/**
+	* Load the static $instance property that holds the instance of the class.
+	*
+	* @return object
+	*
+	*/
+	static public function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new Deserialize_Metadata();
+		}
+		return self::$instance;
+	}
+
+	/**
 	 * This is our constructor
 	 *
 	 * @return void
 	 */
 	public function __construct() {
 
-		$this->version = '0.0.6';
+		$this->version = '0.0.7';
 		$this->config = array();
 		$this->wp_tables = array(
 			'wp_posts' => 'wp_posts',
@@ -579,4 +598,4 @@ class Deserialize_Metadata {
 	/// end class
 }
 // Instantiate our class
-$deserialize_metadata = new Deserialize_Metadata();
+$deserialize_metadata = Deserialize_Metadata::get_instance();
