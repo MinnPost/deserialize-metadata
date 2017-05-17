@@ -64,6 +64,8 @@ class Deserialize_Metadata {
 
 		$this->load_admin();
 
+		add_filter( 'cron_schedules', array( $this, 'set_schedule_frequency' ) );
+
 		$this->config();
 		$this->schedule();
 
@@ -365,6 +367,49 @@ class Deserialize_Metadata {
 			register_setting( $section, $id );
 		}
 		register_setting( $section, 'deserialize_metadata_maps' );
+
+	}
+
+	/**
+	* Convert the schedule frequency from the admin settings into an array
+	* interval must be in seconds for the class to use it
+	*/
+	public function set_schedule_frequency( $schedules ) {
+
+		$name = '';
+		// can try to get this value somehow later
+		if ( '' !== $name ) {
+			$name = '_' . $name;
+		}
+
+		// create an option in the core schedules array for each one the plugin defines
+		$schedule_number = get_option( 'deserialize_metadata' . $name . '_schedule_number', '' );
+		$schedule_unit = get_option( 'deserialize_metadata' . $name . '_schedule_unit', '' );
+
+		switch ( $schedule_unit ) {
+			case 'minutes':
+				$seconds = 60;
+				break;
+			case 'hours':
+				$seconds = 3600;
+				break;
+			case 'days':
+				$seconds = 86400;
+				break;
+			default:
+				$seconds = 0;
+		}
+
+		$key = $schedule_unit . '_' . $schedule_number;
+
+		$schedules[ $key ] = array(
+			'interval' => $seconds * $schedule_number,
+			'display' => 'Every ' . $schedule_number . ' ' . $schedule_unit,
+		);
+
+		$this->schedule_frequency = $key;
+
+		return $schedules;
 
 	}
 
