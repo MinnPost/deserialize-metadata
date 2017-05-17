@@ -551,11 +551,12 @@ class Deserialize_Metadata {
 			// this would need to change to allow different schedules
 			$schedule_frequency = $this->get_schedule_frequency_key();
 
-			if ( ! wp_next_scheduled( 'start_serialized_event' ) ) {
-				wp_schedule_event( time(), $schedule_frequency, 'start_serialized_event' );
+			if ( ! wp_next_scheduled( 'deserialize_event' ) ) {
+				wp_schedule_event( time(), $schedule_frequency, 'deserialize_event' );
 			}
+
+			add_action( 'deserialize_event', array( $this, 'get_posts_with_serialized_metadata' ) );
 		}
-		add_action( 'start_serialized_event', array( $this, 'get_posts_with_serialized_metadata' ) );
 	}
 
 	/**
@@ -565,7 +566,7 @@ class Deserialize_Metadata {
 	 * @return void
 	 */
 	public function deactivate() {
-		wp_clear_scheduled_hook( 'start_serialized_event' );
+		wp_clear_scheduled_hook( 'deserialize_event' );
 	}
 
 	/**
@@ -576,9 +577,7 @@ class Deserialize_Metadata {
 	 */
 	public function get_posts_with_serialized_metadata() {
 		foreach ( $this->config as $config ) {
-
-			$offset = get_option( 'deserialize_metadata_last_row_checked', '0' );
-
+			$offset = get_option( 'deserialize_metadata_last_post_checked', '0' );
 			$key = $config['wp_imported_field'];
 			$maps = $config['maps'];
 			$args = array(
@@ -601,7 +600,7 @@ class Deserialize_Metadata {
 					$this->create_fields( $post_id, $metadata, $maps );
 					$this->delete_combined_field( $post_id, $key );
 				}
-				update_option( 'deserialize_metadata_last_row_checked', $config['posts_per_page'] + $offset );
+				update_option( 'deserialize_metadata_last_post_checked', $config['posts_per_page'] + $offset );
 			}
 		}
 
@@ -615,16 +614,28 @@ class Deserialize_Metadata {
 	 */
 	public function create_fields( $post_id, $metadata, $maps ) {
 		if ( is_array( $metadata ) && ! empty( $metadata ) ) {
-			foreach ( $metadata as $key => $value ) {
-				if ( array_key_exists( $key, $maps ) ) {
-					if ( 'wp_postmeta' === $maps[ $key ]['wp_table'] && '' !== $value && null !== $value ) {
-						add_post_meta( $post_id, $maps[ $key ]['wp_column'], $value, $maps[ $key ]['unique'] );
-					} elseif ( 'wp_posts' === $maps[ $key ]['wp_table'] && '' !== $value && null !== $value ) {
-						$post = array(
-							'ID' => $post_id,
-							$maps[ $key ]['wp_column'] => $value,
-						);
-						wp_update_post( $post );
+			foreach ( $metadata as $key => $value ) { // for each field, get its name and value
+				if ( array_key_exists( $key, $maps ) ) { // if the field is in the settings list
+					if ( 'wp_postmeta' === $maps[ $key ]['wp_table'] && '' !== $value && null !== $value ) { // if it belongs in the postmeta table
+						// check to see if it has a value
+						$pre_existing_value = get_post_meta( $post_id, $maps[ $key ]['wp_column'], true );
+						if ( ! empty( $pre_existing_value ) ) {
+							error_log( 'meta field already exists on this post. the value is ' . $pre_existing_value );
+						} else {
+							add_post_meta( $post_id, $maps[ $key ]['wp_column'], $value, $maps[ $key ]['unique'] );
+						}
+					} elseif ( 'wp_posts' === $maps[ $key ]['wp_table'] && '' !== $value && null !== $value ) { // if it belongs in the post table
+						$pre_existing_post = get_post( $post_id, 'ARRAY_A' );
+						$pre_existing_value = $pre_existing_post[ $maps[ $key ]['wp_column'] ];
+						if ( ! empty( $pre_existing_value ) ) {
+							error_log( 'the field already exists on this post. the value is ' . $pre_existing_value );
+						} else {
+							$post = array(
+								'ID' => $post_id,
+								$maps[ $key ]['wp_column'] => $value,
+							);
+							wp_update_post( $post );
+						}
 					}
 				}
 			}
