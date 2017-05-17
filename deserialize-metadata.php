@@ -78,8 +78,8 @@ class Deserialize_Metadata {
 	* @throws \Exception
 	*/
 	private function load_admin() {
-		add_action( 'admin_menu', array( &$this, 'create_admin_menu' ) );
-		add_action( 'admin_init', array( &$this, 'admin_settings_form' ) );
+		add_action( 'admin_menu', array( $this, 'create_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'admin_settings_form' ) );
 		add_action( 'updated_option', function( $option_name, $old_value, $value ) {
 			if ( ( 'deserialize_metadata_schedule_number' === $option_name && $old_value !== $value ) || ( 'deserialize_metadata_schedule_unit' === $option_name && $old_value !== $value ) ) {
 				// delete the old schedule and create the new one - this means user changed how often it should run
@@ -87,7 +87,7 @@ class Deserialize_Metadata {
 				$this->schedule();
 			}
 		}, 10, 3);
-		add_filter( 'plugin_action_links', array( &$this, 'plugin_action_links' ), 10, 5 );
+		add_filter( 'plugin_action_links', array( $this, 'plugin_action_links' ), 10, 5 );
 	}
 
 	/**
@@ -95,7 +95,7 @@ class Deserialize_Metadata {
 	*
 	*/
 	public function create_admin_menu() {
-		add_options_page( __( 'Deserialize Metadata', 'deserialize-metadata' ), __( 'Deserialize Metadata', 'deserialize-metadata' ), 'manage_options', 'deserialize-metadata', array( &$this, 'show_admin_page' ) );
+		add_options_page( __( 'Deserialize Metadata', 'deserialize-metadata' ), __( 'Deserialize Metadata', 'deserialize-metadata' ), 'manage_options', 'deserialize-metadata', array( $this, 'show_admin_page' ) );
 	}
 
 	/**
